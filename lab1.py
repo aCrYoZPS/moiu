@@ -27,7 +27,7 @@ def solve(A_inv: np.ndarray, x: np.ndarray, i: int) -> np.ndarray | None:
 
 
 def main():
-    for i in range(10):
+    for iters in range(10):
         n = 5
         i = random.randint(1, n)
         A = 100 * np.random.random((n, n))
