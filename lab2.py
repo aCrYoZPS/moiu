@@ -33,14 +33,33 @@ class LPProblem:
         self.bounds = bounds if bounds is not None else [(0, None)] * len(c)
         self.maximize = maximize
 
+    def __str__(self):
+        res = ""
+        direction = "Maximize" if self.maximize else "Minimize"
+        res += f"{direction}: {self.c} * x\n"
+        res += "Subject to:\n"
+        for i in range(len(self.A)):
+            res += f"  {np.around(self.A[i], 4)} {self.ops[i]} {np.around(self.b[i], 4)}\n"
+        for i, bound in enumerate(self.bounds):
+            if bound[0] is None and bound[1] is None:
+                res += f"x_{i+1} <> 0"
+            elif bound[0] is None:
+                res += f"x_{i+1} <= {bound[1]}\n"
+            elif bound[1] is None:
+                res += f"x_{i+1} >= {bound[0]}\n"
+            else:
+                res += f"x_{i+1} >= {bound[0]}\n"
+                res += f"x_{i+1} <= {bound[1]}\n"
+
+        return res
+
     def canonicalize(self):
         """
-        Converts the LP to Standard Form (Normalization):
+        Converts the LP to Canonical Form (Canonicalization):
         Maximize c^T x
         Subject to:
             Ax = b
             x >= 0
-            b >= 0
         """
         c_new = self.c.copy() if self.maximize else -self.c.copy()
 
@@ -127,7 +146,7 @@ class LPProblem:
 
     def normalize(self):
         """
-        Converts the LP to Canonical Form:
+        Converts the LP to Normal Form:
         Maximize c^T x
         Subject to:
             Ax <= b

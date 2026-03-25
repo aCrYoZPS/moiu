@@ -10,9 +10,8 @@ class BasisPlan:
         self.x = np.array(x, dtype=float)
         self.basis = np.array(sorted(basis), dtype=int)
 
-    def print(self):
-        print(f"x: {self.x}")
-        print(f"B: {self.basis}")
+    def __str__(self):
+        return f"x: {self.x}\nB: {self.basis}"
 
 
 def simplex_main_phase(problem: LPProblem, basis_plan: BasisPlan) -> np.ndarray | None:
@@ -68,7 +67,7 @@ def simplex_main_phase(problem: LPProblem, basis_plan: BasisPlan) -> np.ndarray 
             basis_plan.x[j_i] = basis_plan.x[j_i] - theta_0 * z[i]
 
         print("\n--- New Basis Plan ---")
-        basis_plan.print()
+        print(basis_plan)
 
 
 def main():
