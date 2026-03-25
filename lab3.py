@@ -16,7 +16,7 @@ class BasicSolution:
         return f"x: {self.x}\nB: {self.basis}"
 
 
-def simplex_main_phase(problem: LPProblem, basic_solution: BasicSolution) -> np.ndarray | None:
+def simplex_main_phase(problem: LPProblem, basic_solution: BasicSolution) -> BasicSolution | None:
     A_b_inv = None
     k = None
     c, A, b, offset = problem.canonicalize()
@@ -39,7 +39,7 @@ def simplex_main_phase(problem: LPProblem, basic_solution: BasicSolution) -> np.
                 break
 
         if is_optimal:
-            return basic_solution.x
+            return basic_solution
 
         z = A_b_inv @ A[:, int(j_0)]
 
@@ -65,7 +65,7 @@ def simplex_main_phase(problem: LPProblem, basic_solution: BasicSolution) -> np.
             if i != k:
                 basic_solution.x[j_i] = basic_solution.x[j_i] - theta_0 * z[i]
 
-        print("\n--- New Basic Solution ---")
+        print("\n---- New Basic Solution ----")
         print(basic_solution)
 
 
