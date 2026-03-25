@@ -1,9 +1,9 @@
 from lab2 import LPProblem
-from lab3 import BasisPlan, simplex_main_phase
+from lab3 import BasicSolution, simplex_main_phase
 import numpy as np
 
 
-def simplex_starting_phase(problem: LPProblem) -> BasisPlan | None:
+def simplex_starting_phase(problem: LPProblem) -> BasicSolution | None:
     A = np.copy(problem.A)
     b = np.copy(problem.b)
     c = np.copy(problem.c)
@@ -20,7 +20,7 @@ def simplex_starting_phase(problem: LPProblem) -> BasisPlan | None:
     x_tilde = np.append(np.zeros((1, n)), b)
     aux_lp = LPProblem(c_tilde, A_tilde, b, ["="]*m, [(0, None)]*(m+n), True)
     basis = [i for i in range(n, n+m)]
-    aux_basic_plan = BasisPlan(x_tilde, basis)
+    aux_basic_plan = BasicSolution(x_tilde, basis)
 
     print(aux_lp)
 
