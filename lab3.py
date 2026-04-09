@@ -70,20 +70,20 @@ def simplex_main_phase(problem: LPProblem, basic_solution: BasicSolution) -> Bas
 
 
 def main():
-    # c = [1, 1, 0, 0, 0]
-    # A = [[-1, 1, 1, 0, 0], [1, 0, 0, 1, 0], [0, 1, 0, 0, 1]]
-    # b = [1, 3, 2]
-    # ops = ['=', '=', '=']
-    # bounds = [(0, None), (0, None), (0, None), (0, None), (0, None)]
-    c = [1, 0, 0, 0]
-    A = [[1, -1, 1, 0], [-1, 1, 0, 1]]
-    b = [1, 2]
+    c = [1, 1, 0, 0, 0]
+    A = [[-1, 1, 1, 0, 0], [1, 0, 0, 1, 0], [0, 1, 0, 0, 1]]
+    b = [1, 3, 2]
     ops = ['=', '=', '=']
     bounds = [(0, None), (0, None), (0, None), (0, None), (0, None)]
+    # c = [1, 0, 0, 0]
+    # A = [[1, -1, 1, 0], [-1, 1, 0, 1]]
+    # b = [1, 2]
+    # ops = ['=', '=', '=']
+    # bounds = [(0, None), (0, None), (0, None), (0, None), (0, None)]
 
     lp = LPProblem(c, A, b, ops, bounds, maximize=True)
     # ZERO INDEXED
-    optimal_plan = simplex_main_phase(lp, BasicSolution([1, 0, 0, 3], [0, 3]))
+    optimal_plan = simplex_main_phase(lp, BasicSolution([0, 0, 1, 3, 2], [2, 3, 4]))
     if optimal_plan is None:
         print("The objective function is unbounded above on the feasible set")
     else:

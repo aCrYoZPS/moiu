@@ -22,7 +22,7 @@ def simplex_starting_phase(problem: LPProblem) -> tuple[LPProblem, BasicSolution
     aux_lp = LPProblem(c_tilde, A_tilde, b, ["="] * m, [(0, None)] * (m + n), True)
     basis = [i for i in range(n, n + m)]
     aux_basic_plan = BasicSolution(x_tilde, basis)
-
+    print("---- Auxilary Linear Programming problem ----")
     print(aux_lp)
 
     aux_optimal_plan = simplex_main_phase(aux_lp, aux_basic_plan)
@@ -42,7 +42,6 @@ def simplex_starting_phase(problem: LPProblem) -> tuple[LPProblem, BasicSolution
 
         if j_i >= n:
             has_artificial_var_in_basis = True
-            break
 
     while has_artificial_var_in_basis:
         A_tilde_b_inv = np.linalg.inv(A_tilde[:, aux_optimal_plan.basis])
@@ -87,6 +86,8 @@ def main():
     bounds = [(0, None), (0, None), (0, None)]
 
     lp = LPProblem(c, A, b, ops, bounds, maximize=True)
+    print("---- Starting problem ----")
+    print(lp)
     new_problem, basic_plan = simplex_starting_phase(lp)
     print("---- Simplex method starting phase returned ----")
     print("---- New Problem ----")
