@@ -1,12 +1,18 @@
-import numpy as np
 import math
 import pprint
 
+import numpy as np
 
-def dual_simplex_method(c: list, A: list[list], b: list, basis: list[int]) -> np.ndarray | None:
+from lab3 import BasicSolution
+
+EPS = 1e-9
+
+
+def dual_simplex_method(c: list, A: list[list], b: list, basis: list[int]) -> BasicSolution | None:
     c = np.copy(np.array(c))
     A = np.copy(np.array(A))
     b = np.copy(np.array(b))
+    basis = list(basis)
     n = len(c)
 
     while True:
@@ -27,13 +33,13 @@ def dual_simplex_method(c: list, A: list[list], b: list, basis: list[int]) -> np
         is_optimal = True
         j_k = -1
         for idx, ae in enumerate(pseudo_plan):
-            if ae < 0:
+            if ae < -EPS:
                 j_k = idx
                 is_optimal = False
                 break
 
         if is_optimal:
-            return pseudo_plan
+            return BasicSolution(pseudo_plan, basis)
 
         k = basis.index(j_k)
         delta_y = A_b_inv[k]
@@ -43,9 +49,9 @@ def dual_simplex_method(c: list, A: list[list], b: list, basis: list[int]) -> np
 
         for j in range(n):
             mu[j] = delta_y @ A[:, j]
-            if mu[j] < 0:
+            if mu[j] < -EPS:
                 is_inconsistent = False
-                sigma[j] = (c[j] - A[:, j] @ y)/mu[j]
+                sigma[j] = (c[j] - A[:, j] @ y) / mu[j]
 
         if is_inconsistent:
             print("mu >= 0 => the problem is inconsistent :(")
@@ -54,7 +60,7 @@ def dual_simplex_method(c: list, A: list[list], b: list, basis: list[int]) -> np
         sigma_0 = math.inf
         j_0 = 0
         for j, sigma_j in enumerate(sigma):
-            if j in basis or mu[j] >= 0:
+            if j in basis or mu[j] >= -EPS:
                 continue
             if sigma_j < sigma_0:
                 j_0 = j
@@ -77,7 +83,7 @@ def task1():
         return
     else:
         print("--- Optimal plan ---")
-        pprint.pprint(opt_plan)
+        pprint.pprint(opt_plan.x)
 
 
 def task2():
@@ -93,7 +99,7 @@ def task2():
         return
     else:
         print("--- Optimal plan ---")
-        pprint.pprint(opt_plan)
+        pprint.pprint(opt_plan.x)
 
 
 def main():

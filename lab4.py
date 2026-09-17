@@ -22,8 +22,6 @@ def simplex_starting_phase(problem: LPProblem) -> tuple[LPProblem, BasicSolution
     aux_lp = LPProblem(c_tilde, A_tilde, b, ["="] * m, [(0, None)] * (m + n), True)
     basis = [i for i in range(n, n + m)]
     aux_basic_plan = BasicSolution(x_tilde, basis)
-    print("---- Auxilary Linear Programming problem ----")
-    print(aux_lp)
 
     aux_optimal_plan = simplex_main_phase(aux_lp, aux_basic_plan)
     for i in range(n, n + m):
@@ -31,7 +29,7 @@ def simplex_starting_phase(problem: LPProblem) -> tuple[LPProblem, BasicSolution
             print(f"x_tilde_{i} != 0 => the problem is inconsistent :(")
             return None
 
-    x = x_tilde[:n]
+    x = aux_optimal_plan.x[:n]
     has_artificial_var_in_basis = False
     k = 0
     j_k = 0

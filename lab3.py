@@ -65,9 +65,6 @@ def simplex_main_phase(problem: LPProblem, basic_solution: BasicSolution) -> Bas
             if i != k:
                 basic_solution.x[j_i] = basic_solution.x[j_i] - theta_0 * z[i]
 
-        print("\n---- New Basic Solution ----")
-        print(basic_solution)
-
 
 def main():
     c = [1, 1, 0, 0, 0]
