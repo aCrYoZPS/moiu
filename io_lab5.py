@@ -1,10 +1,5 @@
 from dataclasses import dataclass
 
-from numpy.random.mtrand import f
-
-import matplotlib.pyplot as plt
-from matplotlib.patches import FancyArrowPatch
-
 
 @dataclass
 class BipartileGraph:
@@ -16,124 +11,90 @@ class BipartileGraph:
         return len(self.v1) + len(self.v2)
 
 
-def is_reachable(g: BipartileGraph, s: int, t: int) -> bool:
-    stack: list[int] = [s]
-    discovered: list[bool] = [False] * g.vertice_count()
-    while len(stack) > 0:
-        v = stack.pop()
-        if not discovered[v]:
-            discovered[v] = True
-            for u in g.neighbours[v]:
-                stack.append(u)
+def find_path(g: BipartileGraph, s: int, t: int) -> list[int]:
+    parent: dict[int, int | None] = {s: None}
+    stack = [s]
+    while stack:
+        u = stack.pop()
+        if u == t:
+            path = []
+            while u is not None:
+                path.append(u)
+                u = parent[u]
+            return path[::-1]
+        for v in g.neighbours[u]:
+            if v not in parent:
+                parent[v] = u
+                stack.append(v)
+    return []
 
-    return discovered[t]
 
-
-def extend_with_s_t(g: BipartileGraph) -> BipartileGraph:
+def extend_with_s_t(g: BipartileGraph) -> tuple[BipartileGraph, int, int]:
     n = g.vertice_count()
-    new_neighbours = {0: [v + 1 for v in g.v1]}
+    s = 0
+    t = n + 1
 
-    v1 = [v + 1 for v in g.v1] + [n]
-    v2 = [0] + [v + 1 for v in g.v2]
+    n1 = len(g.v1)
+    left_id = {u: i + 1 for i, u in enumerate(g.v1)}
+    right_id = {v: n1 + i + 1 for i, v in enumerate(g.v2)}
 
-    for v in range(1, n + 1):
-        new_neighbours[v] = [n + 1 for n in g.neighbours.get(v - 1, [])]
-        if v in g.v2:
-            new_neighbours[v].append(n)
+    new_neighbours: dict[int, list[int]] = {i: [] for i in range(n + 2)}
 
-    return BipartileGraph(v1, v2, new_neighbours)
+    for u in g.v1:
+        new_neighbours[s].append(left_id[u])
 
-def find_max_matching(g:BipartileGraph):
-    ext_g = extend_with_s_t(g)
+    for v in g.v2:
+        new_neighbours[right_id[v]].append(t)
 
-def draw_bipartite_graph(
-    graph: BipartileGraph,
-    *,
-    title: str | None = "Bipartite graph",
-    edge_color: str = "tab:gray",
-    figsize: tuple[float, float] = (7, 6),
-    node_size: float = 700,
-    show: bool = True,
-):
-    """Draw a bipartite graph: v1 (blue) on the left, v2 (green) on the right.
-    Edges are arrows in both directions between parts (v1 ↔ v2), never within a part.
+    for u in g.v1:
+        lu = left_id[u]
+        for v in g.neighbours.get(u, []):
+            new_neighbours[lu].append(right_id[v])
 
-    Indexing:
-      - v1 vertices: 0 .. len(v1)-1
-      - v2 vertices: len(v1) .. len(v1)+len(v2)-1
-      - neighbours keys/values use these global indices.
-    """
+    ext_g = BipartileGraph(
+        v1=[left_id[u] for u in g.v1],
+        v2=[right_id[v] for v in g.v2],
+        neighbours=new_neighbours,
+    )
+    return ext_g, s, t
 
-    def column_positions(vertices: list[int], x: float) -> dict[int, tuple[float, float]]:
-        n = len(vertices)
-        return {v: (x, (n - 1) / 2 - i) for i, v in enumerate(vertices)}
 
-    pos1 = column_positions(graph.v1, 0.0)
-    pos2 = column_positions(graph.v2, 1.0)
+def reverse_arcs(g: BipartileGraph, path: list[int]) -> None:
+    for a, b in zip(path, path[1:]):
+        g.neighbours[a].remove(b)
+        g.neighbours[b].append(a)
 
-    fig, ax = plt.subplots(figsize=figsize)
 
-    radius_pts = (node_size ** 0.5) / 2
+def find_max_matching(g: BipartileGraph) -> list[tuple[int, int]]:
+    ext_g, s, t = extend_with_s_t(g)
 
-    # Edges: draw arrows for each directed edge (u -> w) where u and w are in different parts
-    for u, ws in graph.neighbours.items():
-        if u in pos1:
-            from_pos, to_pos_dict = pos1, pos2
-        elif u in pos2:
-            from_pos, to_pos_dict = pos2, pos1
-        else:
-            raise ValueError(f"Vertex {u} in neighbours is not in v1 or v2")
+    while True:
+        path = find_path(ext_g, s, t)
+        if not path:
+            break
+        reverse_arcs(ext_g, path)
 
-        for w in ws:
-            if w not in to_pos_dict:
-                raise ValueError(
-                    f"Neighbour {w} of vertex {u} is not in the opposite part. "
-                    f"v1 = {graph.v1}, v2 = {graph.v2}"
-                )
-            arrow = FancyArrowPatch(
-                from_pos[u], to_pos_dict[w],
-                arrowstyle="-|>",
-                mutation_scale=14,
-                color=edge_color,
-                linewidth=1.4,
-                alpha=0.85,
-                shrinkA=radius_pts,
-                shrinkB=radius_pts,
-                zorder=1,
-            )
-            ax.add_patch(arrow)
+    left = len(g.v1)
+    result: list[tuple[int, int]] = []
+    for i, v in enumerate(g.v2):
+        for b in ext_g.neighbours[left + i + 1]:
+            if 1 <= b <= left:
+                result.append((g.v1[b - 1], v))
+    return result
 
-    # Nodes
-    for positions, color in ((pos1, "tab:blue"), (pos2, "tab:green")):
-        if not positions:
-            continue
-        xs, ys = zip(*positions.values())
-        ax.scatter(xs, ys, s=node_size, c=color, edgecolors="black", zorder=2)
-        for v, (x, y) in positions.items():
-            ax.text(x, y, str(v), ha="center", va="center",
-                    color="white", fontweight="bold", zorder=3)
-
-    ax.set_xlim(-0.3, 1.3)
-    max_n = max(len(graph.v1), len(graph.v2), 1)
-    ax.set_ylim(-(max_n - 1) / 2 - 0.7, (max_n - 1) / 2 + 0.7)
-    ax.axis("off")
-    if title:
-        ax.set_title(title)
-    fig.tight_layout()
-
-    if show:
-        plt.show()
-    return fig, ax
 
 def main():
     g = BipartileGraph(
-            v1=[0, 1, 2, 3],
-            v2=[4, 5, 6],
-            neighbours={0: [4, 5], 1: [5], 2: [4, 6], 3: [6]},
-        )
-    _ = draw_bipartite_graph(g)
-    ext_g = extend_with_s_t(g)
-    _ = draw_bipartite_graph(ext_g)
+        v1=[0],
+        v2=[1, 2, 3],
+        neighbours={
+            0: [1, 2, 3],
+        },
+    )
+
+    matching = find_max_matching(g)
+    print("Matching:", matching)
+    print("Size:", len(matching))
 
 
 if __name__ == "__main__":
