@@ -65,7 +65,9 @@ def reverse_arcs(g: BipartileGraph, path: list[int]) -> None:
         g.neighbours[b].append(a)
 
 
-def find_max_matching(g: BipartileGraph) -> list[tuple[int, int]]:
+def find_max_matching(
+    g: BipartileGraph,
+) -> tuple[list[tuple[int, int]], BipartileGraph]:
     ext_g, s, t = extend_with_s_t(g)
 
     while True:
@@ -80,10 +82,10 @@ def find_max_matching(g: BipartileGraph) -> list[tuple[int, int]]:
         for b in ext_g.neighbours[left + i + 1]:
             if 1 <= b <= left:
                 result.append((g.v1[b - 1], v))
-    return result
+    return result, ext_g
 
 
-def main():
+def test1():
     g = BipartileGraph(
         v1=[0],
         v2=[1, 2, 3],
@@ -92,9 +94,30 @@ def main():
         },
     )
 
+    matching, _ = find_max_matching(g)
+    print("Matching:", matching)
+    print("Size:", len(matching))
+
+
+def test2():
+    g = BipartileGraph(
+        v1=[0, 1, 2],
+        v2=[3, 4, 5],
+        neighbours={
+            0: [3],
+            1: [3, 4],
+            2: [3, 4, 5],
+        },
+    )
+
     matching = find_max_matching(g)
     print("Matching:", matching)
     print("Size:", len(matching))
+
+
+def main():
+    test1()
+    test2()
 
 
 if __name__ == "__main__":
